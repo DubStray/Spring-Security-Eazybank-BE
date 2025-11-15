@@ -1,4 +1,4 @@
-package com.eazybytes.springsecsection1.model;
+package com.eazybytes.eazybankbackend.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

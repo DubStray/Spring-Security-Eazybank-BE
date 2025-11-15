@@ -1,7 +1,7 @@
-package com.eazybytes.springsecsection1.controller;
+package com.eazybytes.eazybankbackend.controller;
 
-import com.eazybytes.springsecsection1.model.Customer;
-import com.eazybytes.springsecsection1.repository.CustomerRepository;
+import com.eazybytes.eazybankbackend.model.Customer;
+import com.eazybytes.eazybankbackend.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

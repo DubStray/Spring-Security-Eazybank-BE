@@ -1,7 +1,7 @@
-package com.eazybytes.springsecsection1.config;
+package com.eazybytes.eazybankbackend.config;
 
-import com.eazybytes.springsecsection1.model.Customer;
-import com.eazybytes.springsecsection1.repository.CustomerRepository;
+import com.eazybytes.eazybankbackend.model.Customer;
+import com.eazybytes.eazybankbackend.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
