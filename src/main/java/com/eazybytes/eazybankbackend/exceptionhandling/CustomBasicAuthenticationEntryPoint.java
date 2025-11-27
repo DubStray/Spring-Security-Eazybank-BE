@@ -16,26 +16,57 @@ import java.time.LocalDateTime;
 public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request,
+                         HttpServletResponse response,
+                         AuthenticationException authException)
+            throws IOException, ServletException {
 
-        // Variabili
+        // Data e ora attuale per tracciare l'errore
         LocalDateTime currentTimeStamp = LocalDateTime.now();
-        String message = (authException != null && authException.getMessage() != null) ? authException.getMessage() : "Unauthorized";
+
+        // Recupero un messaggio leggibile: se l'eccezione esiste, uso il suo messaggio,
+        // altrimenti predefinisco "Unauthorized"
+        String message = (authException != null && authException.getMessage() != null)
+                ? authException.getMessage()
+                : "Unauthorized";
+
+        // Path dell'endpoint che ha generato il problema
         String path = request.getRequestURI();
 
-        response.setHeader("eazybank-error=reason", "Authentication failed");
+        // -------------------------------
+        //  COSTRUZIONE DELLA RESPONSE
+        // -------------------------------
+
+        // Imposto lo status HTTP 401 (richiesta non autenticata)
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
-        // Custom JSON response body (output di postman ad esempio, in caso di errore)
-        response.setContentType("application/json:charset=UTF-8");
-        String jsonResponse = String.format("{\"timestamp\": \"%s\", \"status\": %d, \"error\": \"%s\", \"message\": \"%s\", \"path\": \"%s\"}",
-                // Valorizzo il formato sopra
-                currentTimeStamp, // Timestamp creato sopra, inizio metodo
-                HttpStatus.UNAUTHORIZED.value(), // Valore HTTP (400, 401, 403)
-                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-                message, // Messaggio creato sopra, inizio metodo
-                path); // Path API, creato sopra, inizio metodo
+        // Indico che il corpo della risposta sarà JSON, in UTF-8
+        // NB: la forma corretta usa il punto e virgola, NON i due punti
+        response.setContentType("application/json;charset=UTF-8");
 
+        // Imposto esplicitamente l'encoding dei caratteri
+        response.setCharacterEncoding("UTF-8");
+
+        // Creo il JSON di risposta manualmente.
+        // Puoi farlo anche con ObjectMapper per più pulizia, ma questo funziona perfettamente.
+        String jsonResponse = String.format("""
+                {
+                  "timestamp": "%s",
+                  "status": %d,
+                  "error": "%s",
+                  "message": "%s",
+                  "path": "%s"
+                }
+                """,
+                currentTimeStamp,                  // timestamp in cui è avvenuto l’errore
+                HttpStatus.UNAUTHORIZED.value(),   // codice 401
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(), // errore standard HTTP ("Unauthorized")
+                message,                           // messaggio dell'eccezione
+                path                               // endpoint che ha causato l’errore
+        );
+
+        // Scrive il JSON nella response: questo è ciò che Postman (o un qualsiasi client)
+        // riceverà come corpo della risposta in caso di errore di autenticazione.
         response.getWriter().write(jsonResponse);
     }
 }
