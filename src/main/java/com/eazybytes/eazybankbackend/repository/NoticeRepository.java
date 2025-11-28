@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface NoticeRepository extends CrudRepository<Notice, Long> {
 
+    // JPQL che restituisce gli avvisi la cui finestra di validità contiene la data odierna (usa CURDATE() MySQL)
     @Query(value = "from Notice n where CURDATE() BETWEEN noticBegDt AND noticEndDt")
     List<Notice> findAllActiveNotices();
 

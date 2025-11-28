@@ -11,12 +11,15 @@ import java.io.IOException;
 
 public class CsrfCookieFilter extends OncePerRequestFilter {
 
+    // Filtro che forza la materializzazione del token CSRF nel cookie
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        // Recupera il CsrfToken salvato come attributo della request
         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
-        // Render the token value to a cookie by causing the deferred token to be loaded
+        // Forza la materializzazione del token e quindi la creazione del cookie sul client
         csrfToken.getToken();
+        // Prosegue la catena
         filterChain.doFilter(request, response);
     }
 }

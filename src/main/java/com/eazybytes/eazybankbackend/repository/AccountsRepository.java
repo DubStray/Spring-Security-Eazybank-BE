@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountsRepository extends CrudRepository<Accounts, Long> {
 
+    // Query derivata per recuperare un account dato l'id cliente
     Accounts findByCustomerId(long customerId);
 
 }

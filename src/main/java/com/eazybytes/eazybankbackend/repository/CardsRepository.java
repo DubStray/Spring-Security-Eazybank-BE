@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface CardsRepository extends CrudRepository<Cards, Long> {
 
+    // Restituisce tutte le carte di un cliente
     List<Cards> findByCustomerId(long customerId);
 
 }

@@ -2,7 +2,10 @@ package com.eazybytes.eazybankbackend.config;
 
 import com.eazybytes.eazybankbackend.exceptionhandling.CustomAccessDeniedHandler;
 import com.eazybytes.eazybankbackend.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.eazybytes.eazybankbackend.filter.AuthoritiesLogginAfterFilter;
+import com.eazybytes.eazybankbackend.filter.AuthoritiesLogginAtFilter;
 import com.eazybytes.eazybankbackend.filter.CsrfCookieFilter;
+import com.eazybytes.eazybankbackend.filter.RequestValidationBeforeFIlter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,9 +40,12 @@ public class ProjectSecurityProdConfig {
      */
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        // Gestore per spostare il token CSRF in un attributo della request
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
         http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
+                // Crea sempre sessioni (stateful)
                 .sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+                // CORS in produzione: consente solo l'origin https locale (va adeguato all'ambiente reale)
                 .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
@@ -52,10 +58,16 @@ public class ProjectSecurityProdConfig {
                         return config;
                     }
                 }))
+                // CSRF attivo con cookie leggibile dal client, esclusi alcuni endpoint pubblici
                 .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
                         .ignoringRequestMatchers( "/contact","/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                // Filtri custom attorno a BasicAuthenticationFilter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFIlter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLogginAfterFilter(), BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLogginAtFilter(), BasicAuthenticationFilter.class)
+                // In prod richiede HTTPS (requiresSecure). Migliore pratica per ambienti pubblici.
                 .requiresChannel(rcc -> rcc.anyRequest().requiresSecure()) // Only HTTPS
                 .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
@@ -68,8 +80,11 @@ public class ProjectSecurityProdConfig {
                         .requestMatchers("/myCards").hasRole("USER")
                         .requestMatchers("/user").authenticated()
                         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
+        // Form login di default
         http.formLogin(withDefaults());
+        // Basic auth con entry point custom
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        // Handler custom per accesso negato
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
@@ -92,6 +107,7 @@ public class ProjectSecurityProdConfig {
      */
     @Bean
     public CompromisedPasswordChecker compromisedPasswordChecker() {
+        // Checker che interroga il servizio Have I Been Pwned
         return new HaveIBeenPwnedRestApiPasswordChecker();
     }
 }

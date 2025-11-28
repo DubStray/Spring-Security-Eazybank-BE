@@ -17,18 +17,25 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EazyBankProdUsernamePwdAuthenticationProvider implements AuthenticationProvider {
 
+    // UserDetailsService custom per caricare l'utente dal DB
     private final UserDetailsService userDetailsService;
+    // Encoder per confrontare password in ingresso con quella hash salvata
     private final PasswordEncoder passwordEncoder;
 
+    // Autentica un utente confrontando la password con l'hash salvato
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
         String pwd = authentication.getCredentials().toString();
+        // Carica i dati dell'utente
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+        // Verifica la password con l'encoder configurato
         if(passwordEncoder.matches(pwd, userDetails.getPassword())) {
+            // Ritorna il token autenticato con authorities
             return new UsernamePasswordAuthenticationToken(username, pwd, userDetails.getAuthorities());
         } else {
+            // Password errata -> eccezione gestita da Spring Security
             throw new BadCredentialsException("Invalid password");
         }
     }

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
  */
 public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    // Gestisce risposte 401 per richieste non autenticate generando un JSON custom
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,

@@ -16,22 +16,28 @@ import java.util.Date;
 @Table(name = "notice_details")
 public class Notice {
 
+    // PK dell'avviso
     @Id
     @Column(name = "notice_id")
     private long noticeId;
 
+    // Titolo breve
     @Column(name = "notice_summary")
     private String noticeSummary;
 
+    // Descrizione estesa
     @Column(name = "notice_details")
     private String noticeDetails;
 
+    // Data inizio validità
     @Column(name = "notic_beg_dt")
     private Date noticBegDt;
 
+    // Data fine validità
     @Column(name = "notic_end_dt")
     private Date noticEndDt;
 
+    // Metadati di creazione/aggiornamento nascosti in JSON
     @JsonIgnore
     @Column(name = "create_dt")
     private Date createDt;

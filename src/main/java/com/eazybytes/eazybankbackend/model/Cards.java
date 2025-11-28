@@ -15,28 +15,36 @@ import java.util.Date;
 @Table(name = "cards")
 public class Cards {
 
+    // PK della carta
     @Id
     @Column(name = "card_id")
     private long cardId;
 
+    // Cliente proprietario
     @Column(name = "customer_id")
     private long customerId;
 
+    // Numero carta (mascherato nel seed)
     @Column(name = "card_number")
     private String cardNumber;
 
+    // Tipo carta (es. Credit)
     @Column(name = "card_type")
     private String cardType;
 
+    // Plafond totale
     @Column(name = "total_limit")
     private int totalLimit;
 
+    // Importo utilizzato
     @Column(name = "amount_used")
     private int amountUsed;
 
+    // Importo residuo disponibile
     @Column(name = "available_amount")
     private int availableAmount;
 
+    // Data creazione record
     @Column(name = "create_dt")
     private Date createDt;
 

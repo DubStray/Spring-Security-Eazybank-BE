@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends CrudRepository<Customer, Long> {
 
+    // Trova un cliente per email (usata come username)
     Optional<Customer> findByEmail(String email);
 }

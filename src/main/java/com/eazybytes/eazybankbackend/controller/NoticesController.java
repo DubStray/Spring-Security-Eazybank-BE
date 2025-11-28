@@ -15,16 +15,21 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class NoticesController {
 
+    // Repository per recuperare gli avvisi attivi
     private final NoticeRepository noticeRepository;
 
+    // Endpoint pubblico che ritorna gli avvisi correnti
     @GetMapping("/notices")
     public ResponseEntity<List<Notice>> getNotices() {
+        // Recupera tutti gli avvisi con finestra di validità attuale
         List<Notice> notices = noticeRepository.findAllActiveNotices();
         if (notices != null) {
+            // Risposta 200 OK con cache HTTP abilitata per 60 secondi
             return ResponseEntity.ok()
                     .cacheControl(CacheControl.maxAge(60, TimeUnit.SECONDS))
                     .body(notices);
         } else {
+            // In caso di null viene ritornato null (potrebbe generare 500 lato framework)
             return null;
         }
     }

@@ -2,7 +2,10 @@ package com.eazybytes.eazybankbackend.config;
 
 import com.eazybytes.eazybankbackend.exceptionhandling.CustomAccessDeniedHandler;
 import com.eazybytes.eazybankbackend.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.eazybytes.eazybankbackend.filter.AuthoritiesLogginAfterFilter;
+import com.eazybytes.eazybankbackend.filter.AuthoritiesLogginAtFilter;
 import com.eazybytes.eazybankbackend.filter.CsrfCookieFilter;
+import com.eazybytes.eazybankbackend.filter.RequestValidationBeforeFIlter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,9 +40,12 @@ public class ProjectSecurityConfig {
      */
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        // Gestore per spostare il token CSRF in un attributo della request
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
         http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
+                // Crea sempre una sessione (comportamento stateful, tipico di form login)
                 .sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+                // Configurazione CORS: consente richieste dal front locale Angular
                 .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
@@ -52,10 +58,16 @@ public class ProjectSecurityConfig {
                         return config;
                     }
                 }))
+                // Configurazione CSRF con cookie leggibile dal client (HttpOnly=false)
                 .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
                         .ignoringRequestMatchers( "/contact","/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                // Aggiunge filtri custom attorno al BasicAuthenticationFilter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFIlter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLogginAfterFilter(), BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLogginAtFilter(), BasicAuthenticationFilter.class)
+                // In dev accetta solo HTTP non cifrato (requiresInsecure). In ambienti reali usare HTTPS.
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
                 .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
@@ -68,8 +80,11 @@ public class ProjectSecurityConfig {
                         .requestMatchers("/myCards").hasRole("USER")
                         .requestMatchers("/user").authenticated()
                         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
+        // Abilita form login con configurazione di default
         http.formLogin(withDefaults());
+        // Abilita basic auth con entry point custom
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        // Handler custom per accessi negati (403)
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
@@ -92,6 +107,7 @@ public class ProjectSecurityConfig {
      */
     @Bean
     public CompromisedPasswordChecker compromisedPasswordChecker() {
+        // Checker che interroga il servizio Have I Been Pwned (richiede connettività)
         return new HaveIBeenPwnedRestApiPasswordChecker();
     }
 }

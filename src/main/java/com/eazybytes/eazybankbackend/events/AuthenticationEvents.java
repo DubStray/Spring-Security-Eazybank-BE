@@ -18,13 +18,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AuthenticationEvents {
 
+    // Listener che intercetta eventi di login riuscito
     @EventListener
     public void onSuccess(AuthenticationSuccessEvent successEvent) {
+        // Logga i login andati a buon fine con l'username usato
         log.info("Login successful for the user: {}", successEvent.getAuthentication().getName());
     }
 
+    // Listener che intercetta eventi di login fallito
     @EventListener
     public void onFailure(AbstractAuthenticationFailureEvent failureEvent) {
+        // Logga i login falliti e il motivo dell'eccezione di autenticazione
         log.error("Login failed for the user : {} due to : {}", failureEvent.getAuthentication().getName(),
                 failureEvent.getException().getMessage());
     }

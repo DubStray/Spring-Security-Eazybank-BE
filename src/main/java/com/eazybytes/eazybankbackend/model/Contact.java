@@ -15,20 +15,26 @@ import java.util.Date;
 @Table(name = "contact_messages")
 public class Contact {
 
+    // PK stringa generata lato app (prefisso SR)
     @Id
     @Column(name = "contact_id")
     private String contactId;
 
+    // Nome di chi contatta
     @Column(name = "contact_name")
     private String contactName;
 
+    // Email del mittente
     @Column(name = "contact_email")
     private String contactEmail;
 
+    // Oggetto del messaggio
     private String subject;
 
+    // Testo del messaggio
     private String message;
 
+    // Data di creazione record
     @Column(name = "create_dt")
     private Date createDt;
 

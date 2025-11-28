@@ -18,20 +18,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EazyBankUserDetailsService implements UserDetailsService {
 
+    // Repository per cercare l'utente (Customer) su DB
     private final CustomerRepository customerRepository;
 
+    // Carica un utente tramite username (email) per l'autenticazione
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
+        // Cerca il customer per email, altrimenti lancia eccezione gestita da Spring Security
         Customer customer = customerRepository
                 .findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User details not found for the user: " + username));
 
+        // Converte le Authority persistite in GrantedAuthority per Spring Security
         List<GrantedAuthority> authorities = customer
                 .getAuthorities().stream()
                 .map(authority -> new SimpleGrantedAuthority(authority.getName()))
                 .collect(Collectors.toList());
 
+        // Restituisce un User Spring Security con username, password hash e authorities
         return new User(customer.getEmail(), customer.getPwd(), authorities);
     }
 }

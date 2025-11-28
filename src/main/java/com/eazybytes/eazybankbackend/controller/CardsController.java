@@ -13,14 +13,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CardsController {
 
+    // Repository per le carte collegate al cliente
     private final CardsRepository cardsRepository;
 
+    // Rest endpoint che restituisce tutte le carte associate a un cliente
     @GetMapping("/myCards")
     public List<Cards> getCardDetails(@RequestParam long id) {
+        // Recupera tutte le carte del cliente indicato
         List<Cards> cards = cardsRepository.findByCustomerId(id);
         if (cards != null ) {
+            // Ritorna la lista (può essere vuota)
             return cards;
         }else {
+            // Se non trovate, ritorna null (risposta vuota)
             return null;
         }
     }

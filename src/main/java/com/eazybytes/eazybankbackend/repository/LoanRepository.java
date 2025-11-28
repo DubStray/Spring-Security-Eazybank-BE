@@ -9,6 +9,7 @@ import java.util.List;
 @Repository
 public interface LoanRepository extends CrudRepository<Loans, Long> {
 
+    // Restituisce i prestiti di un cliente, ordinati per data di inizio decrescente
     List<Loans> findByCustomerIdOrderByStartDtDesc(long customerId);
 
 }

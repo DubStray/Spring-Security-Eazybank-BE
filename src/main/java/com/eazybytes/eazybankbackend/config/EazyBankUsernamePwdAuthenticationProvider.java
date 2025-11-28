@@ -16,15 +16,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EazyBankUsernamePwdAuthenticationProvider implements AuthenticationProvider {
 
+    // UserDetailsService custom che recupera l'utente dal DB
     private final UserDetailsService userDetailsService;
+    // Encoder password configurato (non usato qui, vedi nota sotto)
     private final PasswordEncoder passwordEncoder;
 
+    // Autentica un utente con username/password (dev: non verifica la password)
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getName();
         String pwd = authentication.getCredentials().toString();
+        // Carica i dettagli dell'utente
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+        // N.B. In questa variante dev la password NON viene verificata.
+        // Best practice: usare passwordEncoder.matches(pwd, userDetails.getPassword())
+        // come fa la classe prod per evitare accessi senza controllo.
         return new UsernamePasswordAuthenticationToken(username, pwd, userDetails.getAuthorities());
     }
 
