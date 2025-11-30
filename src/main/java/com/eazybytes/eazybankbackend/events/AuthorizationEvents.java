@@ -6,12 +6,10 @@ import org.springframework.security.authorization.event.AuthorizationDeniedEvent
 import org.springframework.stereotype.Component;
 
 /**
- * Classe custom per ascoltare gli eventi dell'Authentication
- *
- * onSuccess se il login avviene
- * onFailure se il login fallisce
- *
- * Slf4j libreria di lombok per loggare
+ * Listener custom per gli eventi di autorizzazione negata.
+ * Quando un utente autenticato prova ad accedere a una risorsa senza permessi,
+ * Spring Security pubblica un AuthorizationDeniedEvent che viene intercettato qui.
+ * Usa Slf4j (fornito da Lombok) per loggare il dettaglio.
  */
 @Component
 @Slf4j

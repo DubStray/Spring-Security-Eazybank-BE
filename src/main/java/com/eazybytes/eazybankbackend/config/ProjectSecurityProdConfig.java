@@ -2,10 +2,7 @@ package com.eazybytes.eazybankbackend.config;
 
 import com.eazybytes.eazybankbackend.exceptionhandling.CustomAccessDeniedHandler;
 import com.eazybytes.eazybankbackend.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.eazybytes.eazybankbackend.filter.AuthoritiesLogginAfterFilter;
-import com.eazybytes.eazybankbackend.filter.AuthoritiesLogginAtFilter;
-import com.eazybytes.eazybankbackend.filter.CsrfCookieFilter;
-import com.eazybytes.eazybankbackend.filter.RequestValidationBeforeFIlter;
+import com.eazybytes.eazybankbackend.filter.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +20,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -42,9 +40,9 @@ public class ProjectSecurityProdConfig {
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         // Gestore per spostare il token CSRF in un attributo della request
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
-        http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
-                // Crea sempre sessioni (stateful)
-                .sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+        http
+                // Configurazione stateless: nessuna sessione mantenuta lato server
+                .sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // CORS in produzione: consente solo l'origin https locale (va adeguato all'ambiente reale)
                 .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
                     @Override
@@ -54,6 +52,7 @@ public class ProjectSecurityProdConfig {
                         config.setAllowedMethods(Collections.singletonList("*"));
                         config.setAllowCredentials(true);
                         config.setAllowedHeaders(Collections.singletonList("*"));
+                        config.setExposedHeaders(Arrays.asList("Authorization"));
                         config.setMaxAge(3600L);
                         return config;
                     }
@@ -67,6 +66,8 @@ public class ProjectSecurityProdConfig {
                 .addFilterBefore(new RequestValidationBeforeFIlter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLogginAfterFilter(), BasicAuthenticationFilter.class)
                 .addFilterAt(new AuthoritiesLogginAtFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 // In prod richiede HTTPS (requiresSecure). Migliore pratica per ambienti pubblici.
                 .requiresChannel(rcc -> rcc.anyRequest().requiresSecure()) // Only HTTPS
                 .authorizeHttpRequests((requests) -> requests
