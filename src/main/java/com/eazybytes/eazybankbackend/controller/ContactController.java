@@ -3,11 +3,15 @@ package com.eazybytes.eazybankbackend.controller;
 import com.eazybytes.eazybankbackend.model.Contact;
 import com.eazybytes.eazybankbackend.repository.ContactRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostFilter;
+import org.springframework.security.access.prepost.PreFilter;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 @RestController
@@ -19,13 +23,18 @@ public class ContactController {
 
     // Endpoint POST pubblico che salva una richiesta di contatto
     @PostMapping("/contact")
-    public Contact saveContactInquiryDetails(@RequestBody Contact contact) {
-        // Genera un identificativo univoco-like per la richiesta
-        contact.setContactId(getServiceReqNumber());
-        // Timestamp di creazione
-        contact.setCreateDt(new Date(System.currentTimeMillis()));
-        // Salva su database e restituisce l'entità salvata
-        return contactRepository.save(contact);
+    // @PreFilter("filterObject.contactName != 'Test'")
+    @PostFilter("filterObject.contactName != 'Test'")
+    public List<Contact> saveContactInquiryDetails(@RequestBody List<Contact> contacts) {
+        List<Contact> returnContacts = new ArrayList<>();
+        if(!contacts.isEmpty()) {
+            Contact contact = contacts.getFirst();
+            contact.setContactId(getServiceReqNumber());
+            contact.setCreateDt(new Date(System.currentTimeMillis()));
+            Contact savedContact = contactRepository.save(contact);
+            returnContacts.add(savedContact);
+        }
+        return returnContacts;
     }
 
     // Funzione helper per generare il codice SR casuale
