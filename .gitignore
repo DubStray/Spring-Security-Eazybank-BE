@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+application.properties
+src/main/resources/application_prod.properties
+src/main/java/com/eazybytes/eazybankbackend/constants/ApplicationConstants.java
