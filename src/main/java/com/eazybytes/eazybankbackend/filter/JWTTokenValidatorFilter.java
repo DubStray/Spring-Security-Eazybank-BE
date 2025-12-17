@@ -29,6 +29,7 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Flusso: legge l'header Authorization, valida il JWT e ricostruisce Authentication per il resto della chain
         // Recupera il token JWT dal header Authorization se presente
         String jwt = request.getHeader(ApplicationConstants.JWT_HEADER);
         if(null != jwt) {
@@ -52,6 +53,7 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
                         // Estrae username e authorities dai claims per ricreare l'oggetto Authentication
                         String username = String.valueOf(claims.get("username"));
                         String authorities = String.valueOf(claims.get("authorities"));
+                        // In base ai claims ricreiamo il token Authentication che verrà usato dai controller/metodi protetti
                         Authentication authentication = new UsernamePasswordAuthenticationToken(
                                 username,
                                 null,

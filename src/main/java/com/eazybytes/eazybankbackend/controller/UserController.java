@@ -80,6 +80,11 @@ public class UserController {
     // Endpoint di login REST: autentica username/password e restituisce un JWT in header e body
     @PostMapping("/apiLogin")
     public ResponseEntity<LoginResponseDTO> apiLogin(@RequestBody LoginRequestDTO loginRequest) {
+        // Workflow semplificato:
+        // - creiamo un UsernamePasswordAuthenticationToken con le credenziali ricevute
+        // - demandiamo l'autenticazione all'AuthenticationManager (usa i provider configurati)
+        // - se l'utente risulta autenticato, costruiamo un JWT firmato con la secret letta da properties/env
+        // - rimandiamo il token al client sia nell'header custom che nel body JSON
         String jwt = "";
         // Costruisce un token grezzo con le credenziali fornite dal client
         Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());

@@ -19,7 +19,10 @@ public class AuthorizationEvents {
     @EventListener
     public void onFailure(AuthorizationDeniedEvent deniedEvent) {
         // Logga le autorizzazioni negate; attenzione: getAuthentication() può essere vuoto in alcuni casi
-        log.error("Authorization failed for the user : {} due to : {}", deniedEvent.getAuthentication().get().getName(),
+        // (aggiungere un null-check se si vogliono evitare eccezioni quando l'evento non ha principal associato)
+        log.error("Authorization failed for the user : {} due to : {}",
+                deniedEvent.getAuthentication().get().getName(),
                 deniedEvent.getAuthorizationDecision().toString());
     }
 }
+

@@ -26,6 +26,11 @@ public class ContactController {
     // @PreFilter("filterObject.contactName != 'Test'")
     @PostFilter("filterObject.contactName != 'Test'")
     public List<Contact> saveContactInquiryDetails(@RequestBody List<Contact> contacts) {
+        // NB: per semplicità prendiamo solo il primo elemento della lista inviata dal client
+        // 1) estraiamo il primo contatto
+        // 2) generiamo l'ID "SR" casuale (non garantisce univocità, ma basta per la demo)
+        // 3) impostiamo la data di creazione
+        // 4) salviamo a DB e ritorniamo una lista contenente il record salvato
         List<Contact> returnContacts = new ArrayList<>();
         if(!contacts.isEmpty()) {
             Contact contact = contacts.getFirst();

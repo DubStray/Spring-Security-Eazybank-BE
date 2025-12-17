@@ -19,6 +19,7 @@ public class RequestValidationBeforeFIlter implements Filter {
     // Filtro che valida l'header Basic Auth prima dell'autenticazione
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        // Obiettivo: controllare l'Authorization header "Basic ..." PRIMA di attivare BasicAuthenticationFilter
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         HttpServletResponse res = (HttpServletResponse) servletResponse;
 
@@ -28,6 +29,7 @@ public class RequestValidationBeforeFIlter implements Filter {
             header = header.trim();
 
             if(StringUtils.startsWithIgnoreCase(header, "Basic")) {
+                // Header "Basic" = base64(user:password)
                 // Decodifica credenziali Basic (base64 di user:password)
                 byte[] base64Token = header.substring(6).getBytes(StandardCharsets.UTF_8);
                 byte[] decoded;
@@ -43,6 +45,7 @@ public class RequestValidationBeforeFIlter implements Filter {
                     String email = token.substring(0, delim);
 
                     // Blocco demo: se l'email contiene "test" rifiuta la richiesta
+                    // (simula una regola di validazione preliminare a qualsiasi tentativo di login)
                     if (email.toLowerCase().contains("test")) {
                         res.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         return;

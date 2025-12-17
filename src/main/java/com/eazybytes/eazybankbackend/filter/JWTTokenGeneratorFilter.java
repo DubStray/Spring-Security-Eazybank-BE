@@ -29,6 +29,7 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         // Recupera l'oggetto Authentication popolato dai filtri precedenti
+        // (se è presente significa che l'utente è già autenticato da Basic auth o da JWT)
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (null != authentication) {
 
