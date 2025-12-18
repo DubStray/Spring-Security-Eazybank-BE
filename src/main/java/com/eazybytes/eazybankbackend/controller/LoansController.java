@@ -1,6 +1,8 @@
 package com.eazybytes.eazybankbackend.controller;
 
+import com.eazybytes.eazybankbackend.model.Customer;
 import com.eazybytes.eazybankbackend.model.Loans;
+import com.eazybytes.eazybankbackend.repository.CustomerRepository;
 import com.eazybytes.eazybankbackend.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PostAuthorize;
@@ -9,25 +11,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class LoansController {
 
-    // Repository JPA per i prestiti
     private final LoanRepository loanRepository;
+    private final CustomerRepository customerRepository;
 
-    // Rest endpoint che ritorna i prestiti di un cliente
-    @PostAuthorize("hasRole('USER')")
     @GetMapping("/myLoans")
-    public List<Loans> getLoanDetails(@RequestParam long id) {
-        // Recupera i prestiti del cliente, ordinati dalla data più recente
-        List<Loans> loans = loanRepository.findByCustomerIdOrderByStartDtDesc(id);
-        if (loans != null) {
-            // Ritorna la lista (può essere vuota)
-            return loans;
+    @PostAuthorize("hasRole('USER')")
+    public List<Loans> getLoanDetails(@RequestParam String email) {
+        Optional<Customer> optionalCustomer = customerRepository.findByEmail(email);
+        if (optionalCustomer.isPresent()) {
+            List<Loans> loans = loanRepository.findByCustomerIdOrderByStartDtDesc(optionalCustomer.get().getId());
+            if (loans != null) {
+                return loans;
+            } else {
+                return null;
+            }
         } else {
-            // Se non ci sono risultati, ritorna null (risposta vuota)
             return null;
         }
     }

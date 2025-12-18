@@ -15,6 +15,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -41,6 +42,8 @@ public class ProjectSecurityProdConfig {
      */
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
         // Gestore per spostare il token CSRF in un attributo della request
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
         http
@@ -62,12 +65,12 @@ public class ProjectSecurityProdConfig {
                 }))
                 // CSRF attivo con cookie leggibile dal client, esclusi alcuni endpoint pubblici
                 .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-                        .ignoringRequestMatchers( "/contact","/register", "/apiLogin")
+                        .ignoringRequestMatchers( "/contact","/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 // Filtri custom attorno a BasicAuthenticationFilter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 // In prod richiede HTTPS (requiresSecure). Migliore pratica per ambienti pubblici.
-                .requiresChannel(rcc -> rcc.anyRequest().requiresSecure()) // Only HTTPS
+//                .requiresChannel(rcc -> rcc.anyRequest().requiresSecure()) // Only HTTPS
                 .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
 //                        .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
@@ -78,11 +81,14 @@ public class ProjectSecurityProdConfig {
                         .requestMatchers("/myLoans").authenticated()
                         .requestMatchers("/myCards").hasRole("USER")
                         .requestMatchers("/user").authenticated()
-                        .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin").permitAll());
+                        .requestMatchers("/notices", "/contact", "/error", "/register").permitAll());
+            http.oauth2ResourceServer(rsc -> rsc
+                    .jwt(jwtConfigurer ->  jwtConfigurer
+                            .jwtAuthenticationConverter(jwtAuthenticationConverter)));
         // Form login di default
-        http.formLogin(withDefaults());
+        // http.formLogin(withDefaults());
         // Basic auth con entry point custom
-        http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        // http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         // Handler custom per accesso negato
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();

@@ -1,32 +1,36 @@
 package com.eazybytes.eazybankbackend.controller;
 
 import com.eazybytes.eazybankbackend.model.AccountTransactions;
+import com.eazybytes.eazybankbackend.model.Customer;
 import com.eazybytes.eazybankbackend.repository.AccountTransactionsRepository;
+import com.eazybytes.eazybankbackend.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class BalanceController {
 
-    // Repository per le transazioni di conto corrente
     private final AccountTransactionsRepository accountTransactionsRepository;
+    private final CustomerRepository customerRepository;
 
-    // Rest endpoint che restituisce la lista di movimenti di un cliente
     @GetMapping("/myBalance")
-    public List<AccountTransactions> getBalanceDetails(@RequestParam long id) {
-        // Carica le transazioni ordinate per data decrescente per il cliente indicato
-        List<AccountTransactions> accountTransactions = accountTransactionsRepository.
-                findByCustomerIdOrderByTransactionDtDesc(id);
-        if (accountTransactions != null) {
-            // Ritorna la lista (può essere vuota)
-            return accountTransactions;
+    public List<AccountTransactions> getBalanceDetails(@RequestParam String email) {
+        Optional<Customer> optionalCustomer = customerRepository.findByEmail(email);
+        if (optionalCustomer.isPresent()) {
+            List<AccountTransactions> accountTransactions = accountTransactionsRepository.
+                    findByCustomerIdOrderByTransactionDtDesc(optionalCustomer.get().getId());
+            if (accountTransactions != null) {
+                return accountTransactions;
+            } else {
+                return null;
+            }
         } else {
-            // Se il repository restituisce null, la risposta sarà vuota
             return null;
         }
     }
