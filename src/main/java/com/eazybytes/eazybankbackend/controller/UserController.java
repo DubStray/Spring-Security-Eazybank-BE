@@ -29,19 +29,17 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
+/**
+ * UserController non dovrá piú occuparsi della registrazione e login in quanto quest'applicazione é diventata un Resource Server
+ * KeyCloak si occuperá della parte auth.
+ */
 public class UserController {
 
     // Repository per operare sulla tabella customer
     private final CustomerRepository customerRepository;
-    // Encoder password iniettato dal contesto security
-    private final PasswordEncoder passwordEncoder;
-    // AuthenticationManager usato per autenticare manualmente le credenziali inviate via API
-    private final AuthenticationManager authenticationManager;
-    // Environment fornisce accesso alle proprietà, qui usate per la secret del JWT
-    private final Environment env;
 
     // Endpoint pubblico di registrazione utenti
-    @PostMapping("/register")
+/*    @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
         try {
             // Codifica la password in ingresso usando l'encoder configurato
@@ -66,57 +64,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
                     body("An exception occurred: " + ex.getMessage());
         }
-    }
+    }*/
 
     // Endpoint protetto che restituisce il profilo dell'utente autenticato
-    @RequestMapping("/user")
+/*    @RequestMapping("/user")
     public Customer getUserDetailsAfterLogin(Authentication authentication) {
         // Recupera i dettagli dell'utente loggato tramite principal (email)
         Optional<Customer> optionalCustomer = customerRepository.findByEmail(authentication.getName());
         // Ritorna l'entità se presente, altrimenti null
         return optionalCustomer.orElse(null);
-    }
-
-    // Endpoint di login REST: autentica username/password e restituisce un JWT in header e body
-    @PostMapping("/apiLogin")
-    public ResponseEntity<LoginResponseDTO> apiLogin(@RequestBody LoginRequestDTO loginRequest) {
-        // Workflow semplificato:
-        // - creiamo un UsernamePasswordAuthenticationToken con le credenziali ricevute
-        // - demandiamo l'autenticazione all'AuthenticationManager (usa i provider configurati)
-        // - se l'utente risulta autenticato, costruiamo un JWT firmato con la secret letta da properties/env
-        // - rimandiamo il token al client sia nell'header custom che nel body JSON
-        String jwt = "";
-        // Costruisce un token grezzo con le credenziali fornite dal client
-        Authentication authentication = UsernamePasswordAuthenticationToken.unauthenticated(loginRequest.username(), loginRequest.password());
-
-        // Delegando all'AuthenticationManager si attivano i provider configurati (DB, encoder, ecc.)
-        Authentication authenticationResponse = authenticationManager.authenticate(authentication);
-
-        if (null != authenticationResponse && authenticationResponse.isAuthenticated()) {
-            if (null != env) {
-
-                // Recupera la secret dal file di configurazione, con un fallback di default
-                String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY, ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
-
-                // Genera la SecretKey a partire dalla stringa
-                SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-                // Costruisce il token JWT con issuer, claims e scadenza
-                jwt = Jwts.builder()
-                        .issuer("Eazy Bank")
-                        .subject("JWT Token")
-                        .claim("username", authenticationResponse.getName())
-                        .claim("authorities", authenticationResponse
-                                .getAuthorities().stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .collect(Collectors.joining(",")))
-                        .issuedAt(new Date())
-                        .expiration(new Date((new Date()).getTime() + 30000000))
-                        .signWith(secretKey).compact();
-            }
-        }
-        // Risponde con 200, aggiungendo il JWT sia nell'header personalizzato sia nel body della response
-        return ResponseEntity.status(HttpStatus.OK)
-                .header(ApplicationConstants.JWT_HEADER, jwt)
-                .body(new LoginResponseDTO(HttpStatus.OK.getReasonPhrase(), jwt));
-    }
+    }*/
 }

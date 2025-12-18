@@ -66,11 +66,6 @@ public class ProjectSecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 // Aggiunge filtri custom attorno al BasicAuthenticationFilter
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                .addFilterBefore(new RequestValidationBeforeFIlter(), BasicAuthenticationFilter.class)
-                .addFilterAfter(new AuthoritiesLogginAfterFilter(), BasicAuthenticationFilter.class)
-                .addFilterAt(new AuthoritiesLogginAtFilter(), BasicAuthenticationFilter.class)
-                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
-                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 // In dev accetta solo HTTP non cifrato (requiresInsecure). In ambienti reali usare HTTPS.
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
                 .authorizeHttpRequests((requests) -> requests
@@ -91,38 +86,5 @@ public class ProjectSecurityConfig {
         // Handler custom per accessi negati (403)
         http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
-    }
-
-    // AuthenticationManager con provider custom che interroga il DB tramite UserDetailsService
-    @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        EazyBankUsernamePwdAuthenticationProvider authenticationProvider = new EazyBankUsernamePwdAuthenticationProvider(userDetailsService, passwordEncoder);
-        ProviderManager providerManager = new ProviderManager(authenticationProvider);
-
-        // Mantiene le credenziali nel contesto di autenticazione per riutilizzarle in filtri successivi
-        providerManager.setEraseCredentialsAfterAuthentication(false);
-        return providerManager;
-    }
-
-    /*
-    Metodo di encoder per la password, di default si dovrebbe utilizzare l'oggetto BCryptPasswordEncoder
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // BCrypt é di default il metodo migliore per criptare password
-//      return new BCryptPasswordEncoder();
-
-        // Tramite costruttore di PasswordEncoderFactories c'é la possibilitá di non seguire lo standard di encrypt per
-        // le password (BCrypt). Tuttavia lo si deve specificare {noop} per il plain text, {bcrypt} per bcrypt, etc...
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
-
-    /*
-    API di IHaveBeenPwnd? per testare la durevolezza di una password e capire se é compromessa o meno
-     */
-    @Bean
-    public CompromisedPasswordChecker compromisedPasswordChecker() {
-        // Checker che interroga il servizio Have I Been Pwned (richiede connettività)
-        return new HaveIBeenPwnedRestApiPasswordChecker();
     }
 }
