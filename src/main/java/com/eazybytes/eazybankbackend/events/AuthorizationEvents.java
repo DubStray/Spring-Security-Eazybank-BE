@@ -15,11 +15,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class AuthorizationEvents {
 
+    // Listener che intercetta accessi negati e ne registra i dettagli
     @EventListener
     public void onFailure(AuthorizationDeniedEvent deniedEvent) {
+        // Logga nome utente e risultato della verifica di autorizzazione
         log.error("Authorization failed for the user : {} due to : {}", deniedEvent.getAuthentication().get().getName(),
                 deniedEvent.getAuthorizationResult());
     }
 
 }
-

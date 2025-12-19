@@ -16,6 +16,7 @@ import java.util.Random;
 
 @RestController
 @RequiredArgsConstructor
+// Controller REST per gestire le richieste di contatto
 public class ContactController {
 
     // Repository per salvare i messaggi di contatto

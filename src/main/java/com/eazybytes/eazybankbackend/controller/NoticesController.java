@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequiredArgsConstructor
+// Controller REST per esporre gli avvisi pubblici
 public class NoticesController {
 
     // Repository per recuperare gli avvisi attivi

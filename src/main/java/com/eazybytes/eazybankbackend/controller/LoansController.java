@@ -15,16 +15,22 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+// Controller REST che espone le API sui prestiti
 public class LoansController {
 
+    // Repository per leggere i prestiti
     private final LoanRepository loanRepository;
+    // Repository per recuperare i dati del cliente
     private final CustomerRepository customerRepository;
 
+    // Endpoint che restituisce la lista dei prestiti del cliente
     @GetMapping("/myLoans")
     @PostAuthorize("hasRole('USER')")
     public List<Loans> getLoanDetails(@RequestParam String email) {
+        // Cerca il cliente tramite email
         Optional<Customer> optionalCustomer = customerRepository.findByEmail(email);
         if (optionalCustomer.isPresent()) {
+            // Recupera i prestiti ordinati per data di inizio
             List<Loans> loans = loanRepository.findByCustomerIdOrderByStartDtDesc(optionalCustomer.get().getId());
             if (loans != null) {
                 return loans;
@@ -32,6 +38,7 @@ public class LoansController {
                 return null;
             }
         } else {
+            // Cliente non trovato: nessun prestito da restituire
             return null;
         }
     }

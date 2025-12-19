@@ -10,6 +10,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+// Handler custom per gestire accessi negati (403)
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     // Gestisce le risposte 403 Forbidden generando un JSON custom

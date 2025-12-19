@@ -31,6 +31,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @Profile("prod")
+// Configurazione di sicurezza attiva in produzione
 public class ProjectSecurityProdConfig {
 
     /*
@@ -39,9 +40,11 @@ public class ProjectSecurityProdConfig {
     lambda -> request.requestMatchers("/API/") -> rende accessibile o inaccessibile l'API definita nel request matcher
     request.requestMatchers("/API").authenticated -> rende accessibile l'API solo se si é autenticati
     request.requestMatchers("/API").permitAll -> rende accessibile l'API pubblicamente
-     */
+    */
+    // Definisce la catena di filtri e le regole di sicurezza per il profilo prod
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+        // Converte i ruoli di Keycloak in GrantedAuthority di Spring
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
         // Gestore per spostare il token CSRF in un attributo della request
@@ -82,6 +85,7 @@ public class ProjectSecurityProdConfig {
                         .requestMatchers("/myCards").hasRole("USER")
                         .requestMatchers("/user").authenticated()
                         .requestMatchers("/notices", "/contact", "/error", "/register").permitAll());
+            // Abilita il Resource Server con JWT e mapping dei ruoli personalizzato
             http.oauth2ResourceServer(rsc -> rsc
                     .jwt(jwtConfigurer ->  jwtConfigurer
                             .jwtAuthenticationConverter(jwtAuthenticationConverter)));

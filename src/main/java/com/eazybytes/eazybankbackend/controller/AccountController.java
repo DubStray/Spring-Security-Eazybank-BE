@@ -13,17 +13,20 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+// Controller REST che espone le API relative ai conti
 public class AccountController {
 
     // Repository JPA che accede alla tabella accounts
     private final AccountsRepository accountsRepository;
 
+    // Repository JPA che accede alla tabella customer
     private final CustomerRepository customerRepository;
 
     // Rest endpoint che restituisce il conto di un cliente dato l'id
     @GetMapping("/myAccount")
     public Accounts getAccountDetails(@RequestParam String email) {
 
+        // Cerca il cliente a partire dall'email passata come parametro
         Optional<Customer> optionalCustomer = customerRepository.findByEmail(email);
         if (optionalCustomer.isPresent()) {
             // Recupera l'account del cliente passato via query param ?id=...
@@ -36,6 +39,7 @@ public class AccountController {
                 return null;
             }
         } else {
+            // Cliente non trovato: nessun conto da restituire
             return null;
         }
 

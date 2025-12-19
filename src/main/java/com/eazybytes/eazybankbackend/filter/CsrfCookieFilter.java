@@ -9,6 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// Filtro che espone il token CSRF tramite cookie
 public class CsrfCookieFilter extends OncePerRequestFilter {
 
     // Filtro che forza la materializzazione del token CSRF nel cookie

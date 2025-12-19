@@ -16,12 +16,14 @@ import java.util.stream.Collectors;
  */
 public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
+    // Estrae i ruoli dal JWT di Keycloak e li trasforma in autorizzazioni Spring
     @Override
     public Collection<GrantedAuthority> convert(Jwt source) {
 
         // Legge i claims del realm_access di KeyCloak in una serie di chiavi - valori
         Map<String, Object> realmAccess = (Map<String, Object>) source.getClaims().get("realm_access");
 
+        // Se non ci sono ruoli nel token, ritorna lista vuota
         if (realmAccess == null || realmAccess.isEmpty()) {
             return new ArrayList<>();
         }
