@@ -30,7 +30,8 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
 
         // I ruoli vengono convertiti in ruoli leggibili per Spring
         Collection<GrantedAuthority> returnValue = ((List<String>) realmAccess.get("roles"))
-                .stream().map(roleName -> "ROLE_" + roleName)
+                .stream()
+                .map(roleName -> "ROLE_" + roleName)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
         return returnValue;
